@@ -1,92 +1,88 @@
-         // menu cart js code
-         document.addEventListener('DOMContentLoaded', () => {
-            const addToCartButtons = document.querySelectorAll('.add-to-cart');
-            const cartItemCount = document.querySelector('.cart-icon span');
-            const cartItemsList = document.querySelector('.cart-items');
-            const cartTotal = document.querySelector('.cart-total');
-            const cartIcon = document.querySelector('.cart-icon');
-            const sidebar = document.getElementById('sidebar');
-        
-            let cartItems = [];
-            let totalAmount = 0;
-        
-            addToCartButtons.forEach((button, index) => {
-                button.addEventListener('click', () => {
-                    const item = {
-                        name: document.querySelectorAll('.card .card-title')[index].textContent,
-                        price: parseFloat(
-                            document.querySelectorAll('.price')[index].textContent.slice(1),
-                    ),
-                    quantity: 1,
-                    };
-        
-                    const exisitingItem = cartItems.find(
-                        (cartItem) => cartItem.name === item.name,
-                    );
-                    if (exisitingItem) {
-                        exisitingItem.quantity++;
-                    } else {
-                        cartItems.push(item);
-                    }
-        
-                    totalAmount += item.price;
-        
-                    updateCartUI();
-                });
-        
-                function updateCartUI() {
-                    updateCartItemCount(cartItems.length);
-                    updateCartItemList();
-                    updateCartTotal();  
-                }
-        
-                function updateCartItemCount(count) {
-                    cartItemCount.textContent = count;
-                }
-        
-                function updateCartItemList() {
-                    cartItemsList.innerHTML = '';
-                    cartItems.forEach((item, index) => {
-                        const cartItem = document.createElement('div');
-                        cartItem.classList.add('cart-item', 'individual-cart-item');
-                        cartItem.innerHTML = `
-                        <span>(${item.quantity}x)${item.name}</span>
-                        <span class="cart-item-price">UZS ${(item.price * item.quantity).toFixed(
-                         1,
-                        )}
-                        <button class="remove-btn" data-index="${index}"><i class="fa-solid .fa-times"</i></button>
-                        </span>
-                        `;
-                        
-                        cartItemsList.append(cartItem);
-                    });
-        
-                    const removeButtons = document.querySelectorAll('.remove-item');
-                    removeButtons.forEach((button)  => {
-                        button.addEventListener('click', (event) => {
-                            const index = event.target.dataset.index;
-                            removeItemFromCart(index);
-                        });
-                    });
-                }
-        
-                function removeItemFromCart(index) {
-                    const removeItem = cartItems.splice(index, 1)[0];
-                    totalAmount -= removeItem.price * removeItem.quantity;
-                    updateCartUI();
-                }
-        
-                function updateCartTotal() {
-                    cartTotal.textContent = `${totalAmount.toFixed(2)} so'm`;
-                }
-        
-                cartIcon.addEventListener('click', () => {
-                    sidebar.classList.toggle('open');
-                });
-        
-                const closeButton = document.querySelector('.sidebar-close');
-                closeButton.addEventListener('click', () => {
-                    sidebar.classList.remove('open');
-                });
-            });
+document.addEventListener('DOMContentLoaded', () => {
+    const addToCartButtons = document.querySelectorAll('.add-to-cart');
+    const cartItemCount = document.querySelector('.cart-icon span');
+    const cartItemsList = document.querySelector('.cart-items');
+    const cartTotal = document.querySelector('.cart-total');
+    const cartIcon = document.querySelector('.cart-icon');
+    const sidebar = document.getElementById('sidebar');
+    const closeButton = document.querySelector('.sidebar-close');
+
+    let cartItems = JSON.parse(localStorage.getItem('cart')) || []; // Eski haridlarni yuklash
+
+    updateCartUI(); // Sahifa yuklanganda savatni ko‘rsatish
+
+    addToCartButtons.forEach((button, index) => {
+        button.addEventListener('click', () => {
+            const itemName = document.querySelectorAll('.card .card-title')[index].textContent;
+            const itemPrice = parseFloat(document.querySelectorAll('.price')[index].textContent.replace(/\D/g, ''));
+
+            const existingItem = cartItems.find(item => item.name === itemName);
+            if (existingItem) {
+                existingItem.quantity++;
+            } else {
+                cartItems.push({ name: itemName, price: itemPrice, quantity: 1 });
+            }
+
+            saveCart(); // Ma'lumotlarni localStorage'ga saqlash
+            updateCartUI();
         });
+    });
+
+    function saveCart() {
+        localStorage.setItem('cart', JSON.stringify(cartItems)); // Savatni brauzerda saqlash
+    }
+
+    function updateCartUI() {
+        updateCartItemCount();
+        updateCartItemList();
+        updateCartTotal();
+    }
+
+    function updateCartItemCount() {
+        cartItemCount.textContent = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+    }
+
+    function updateCartItemList() {
+        cartItemsList.innerHTML = cartItems.length === 0 
+            ? `<div>Savatchangiz bo‘sh!</div>` 
+            : cartItems.map((item) => `
+                <div class="cart-item">
+                    <span>(${item.quantity}x) ${item.name}</span>
+                    <span class="cart-item-price">${(item.price * item.quantity).toLocaleString()} so‘m
+                    <button class="remove-item" data-name="${item.name}"><i class="fa-solid fa-times"></i></button></span>
+                </div>
+            `).join('');
+    }
+
+    function updateCartTotal() {
+        const totalAmount = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+        cartTotal.textContent = `${totalAmount.toLocaleString()} so‘m`;
+    }
+
+    cartItemsList.addEventListener('click', (event) => {
+        if (event.target.closest('.remove-item')) {
+            const itemName = event.target.closest('.remove-item').dataset.name;
+            removeItemFromCart(itemName);
+        }
+    });
+
+    function removeItemFromCart(itemName) {
+        cartItems = cartItems.filter(item => item.name !== itemName);
+        saveCart(); // O‘zgartirilgan savatni saqlash
+        updateCartUI();
+    }
+
+    cartIcon.addEventListener('click', () => {
+        sidebar.classList.toggle('open');
+    });
+
+    closeButton.addEventListener('click', () => {
+        sidebar.classList.remove('open');
+    });
+});
+
+
+
+
+
+
