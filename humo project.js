@@ -1,50 +1,61 @@
-const navLinks = document.querySelectorAll(".nav-menu .nav-link");
-const menuOpenButton = document.querySelector("#menu-open-button");
-const menuCloseButton = document.querySelector("#menu-close-button");
+document.addEventListener('DOMContentLoaded', () => {
+	const navLinks = document.querySelectorAll('.nav-menu .nav-link')
+	const menuOpenButton = document.querySelector('#menu-open-button')
+	const menuCloseButton = document.querySelector('#menu-close-button')
+	const mobileMenu = document.body // 'show-mobile-menu' klassi bodyga qo'shiladi
 
-menuOpenButton.addEventListener("click", () => {
-    document.body.classList.toggle("show-mobile-menu");
-});
+	// Menyu ochish
+	menuOpenButton.addEventListener('click', () => {
+		mobileMenu.classList.toggle('show-mobile-menu') // Menyu ko'rsatiladi yoki yashiriladi
+	})
 
-// Close menu when the close button is clicked
-menuCloseButton.addEventListener("click", () => menuOpenButton.click());
+	// Menyu yopish (close button bosilganda)
+	menuCloseButton.addEventListener('click', () => {
+		mobileMenu.classList.remove('show-mobile-menu') // Menyu yopiladi
+	})
 
-// Close menu when the nav link is clicked
-navLinks.forEach(link => {
-    link.addEventListener("click", () => menuOpenButton.click());
-});
+	// Menyu tashqarisiga bosganda ham menyu yopilishi kerak
+	document.addEventListener('click', event => {
+		if (
+			!event.target.closest('.nav-menu') &&
+			!event.target.closest('#menu-open-button') &&
+			mobileMenu.classList.contains('show-mobile-menu')
+		) {
+			mobileMenu.classList.remove('show-mobile-menu') // Menyu yopiladi
+		}
+	})
 
-// Initialize Swiper
-const swiper = new Swiper('.slider-wrapper', {
-    loop: true,
-    grabCursor:true,
-    spaceBetween:25,
-  
-    // If we need pagination
-    pagination: {
-      el: '.swiper-pagination',
-      clickable:true,
-      dynamicBullets:true,
-    },
-  
-    // Navigation arrows
-    navigation: {
-      nextEl: '.swiper-button-next',
-      prevEl: '.swiper-button-prev',
-    },
+	// Menyu havolalarini bosganda ham menyu yopilsin
+	navLinks.forEach(link => {
+		link.addEventListener('click', () => {
+			mobileMenu.classList.remove('show-mobile-menu') // Menyu yopiladi
+		})
+	})
+})
 
-    // Responisive breakpoints
-    breakpoints: {
-        0: {
-            slidesPerView: 1
-        },
-        768: {
-            slidesPerView: 2
-        },
-        1024: {
-            slidesPerView: 3
-        },
-    }
-  });
-
-
+const swiper = new Swiper('.swiper', {
+	slidesPerView: 1,
+	spaceBetween: 10,
+	navigation: {
+		nextEl: '.swiper-button-next',
+		prevEl: '.swiper-button-prev',
+	},
+	pagination: {
+		el: '.swiper-pagination',
+		clickable: true,
+	},
+	breakpoints: {
+		640: {
+			slidesPerView: 1,
+			spaceBetween: 20,
+		},
+		768: {
+			slidesPerView: 2,
+			spaceBetween: 20,
+		},
+		1024: {
+			slidesPerView: 3,
+			spaceBetween: 20,
+		},
+	},
+})
